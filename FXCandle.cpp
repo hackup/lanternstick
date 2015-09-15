@@ -23,7 +23,7 @@ FXCandle::tick()
         for(int i=0;i<pix.numPixels();i++) {
             pix.setPixelColor(i, redTone(random(140,150)));
         }
-        brightness += random(0,11) - 5;
+        brightness += random(0,17) - 8;
         if (brightness < 180) brightness = 180;
         if (brightness > 250) brightness = 250;
         pix.setBrightness(brightness);
@@ -31,7 +31,7 @@ FXCandle::tick()
         
         printf("brigtness: %u\r\n", brightness);
         
-        next = tickCount + random(50,150) / tickInterval;
+        next = tickCount + random(90,250) / tickInterval;
     }
 
 /*
