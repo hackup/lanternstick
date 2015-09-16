@@ -1,3 +1,4 @@
+#include <limits.h>
 #include <OneButton.h>
 #include <Adafruit_NeoPixel.h>
 
@@ -8,6 +9,7 @@
 #define PIN_BUTTON 2
 #define PIN_LEDS   3
 #define TICK_INTERVAL 10
+#define FX_DURATION 3000
 
 #define MODE_CANDLE 0
 #define MODE_ROTATE 1
@@ -17,6 +19,7 @@ Adafruit_NeoPixel strip = Adafruit_NeoPixel(8, PIN_LEDS, NEO_GRB + NEO_KHZ800);
 
 Effect *fx;
 uint8_t mode;
+long lastPress;
 
 void setup() {
 
@@ -28,6 +31,7 @@ void setup() {
 
     fx = new FXCandle(strip, TICK_INTERVAL);
     mode = MODE_CANDLE;
+    lastPress = -;
 
     Serial.begin(57600);
     printf_begin();
@@ -50,15 +54,19 @@ void setMode(uint8_t aMode) {
 }
 
 void loop() {
+    long now = millis();
+    
     button.tick();
 
     if (digitalRead(PIN_BUTTON)==LOW) {
-        setMode(1);
-    } 
-    else {
-        setMode(0);
+        lastPress = now;
     }
-
+    
+    if (now-lastPress < FX_DURATION) {
+        setMode(MODE_ROTATE);
+    } else {
+        setMode(MODE_CANDLE);
+    }
 
     fx->tick();
 
@@ -71,18 +79,14 @@ void doubleclick() {
     // reverse the LED 
     m = !m;
     digitalWrite(13, m);
-} // doubleclick
+}
 
 void pressStart() {
-    printf("pressStart()\n\r");
-    //delete(fx);
-    //fx = new FXRotate(strip, TICK_INTERVAL); 
+    printf("pressStart() currently not used\n\r");
 }
 
 void pressStop() {
-    printf("pressStop()\n\r");
-    //delete(fx);
-    //fx = new FXCandle(strip, TICK_INTERVAL); 
+    printf("pressStop() currently not used\n\r");
 }
 
 
