@@ -5,19 +5,25 @@
 #include "myprintf.h"
 #include "FXCandle.h"
 #include "FXRotate.h"
+#include "FXRainbow.h"
 
 #define PIN_BUTTON 2
 #define PIN_LEDS   3
 #define TICK_INTERVAL 10
 #define FX_DURATION 3000
 
-#define MODE_CANDLE 0
-#define MODE_ROTATE 1
+#define MODE_DEFAULT 0
+#define MODE_SPECIAL 1
 
 OneButton button(2, true);
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(8, PIN_LEDS, NEO_GRB + NEO_KHZ800);
 
 Effect *fx;
+Effect *fxCandle = new FXCandle(strip, TICK_INTERVAL);
+Effect *fxRotate = new FXRotate(strip, TICK_INTERVAL);
+Effect *fxRainbow = new FXRainbow(strip, TICK_INTERVAL);
+Effect *fxDefault = fxCandle;
+Effect *fxSpecial = fxRotate;
 uint8_t mode;
 long lastPress;
 
@@ -29,9 +35,9 @@ void setup() {
 
     strip.begin();
 
-    fx = new FXCandle(strip, TICK_INTERVAL);
-    mode = MODE_CANDLE;
-    lastPress = -;
+    fx = fxDefault;
+    mode = MODE_DEFAULT;
+    lastPress = -999999;
 
     Serial.begin(57600);
     printf_begin();
@@ -41,13 +47,14 @@ void setup() {
 void setMode(uint8_t aMode) {
     if (mode!=aMode) {
         mode = aMode;
-        delete(fx);
+        //delete(fx);
         switch (mode) {
-        case MODE_CANDLE:
-            fx = new FXCandle(strip, TICK_INTERVAL);
+        case MODE_DEFAULT:
+            fx = fxDefault;
             break;
-        case MODE_ROTATE:
-            fx = new FXRotate(strip, TICK_INTERVAL);
+        case MODE_SPECIAL:
+            //fx = new FXRotate(strip, TICK_INTERVAL);
+            fx = fxSpecial;
             break;
         }
     }
@@ -63,9 +70,9 @@ void loop() {
     }
     
     if (now-lastPress < FX_DURATION) {
-        setMode(MODE_ROTATE);
+        setMode(MODE_SPECIAL);
     } else {
-        setMode(MODE_CANDLE);
+        setMode(MODE_DEFAULT);
     }
 
     fx->tick();
@@ -75,10 +82,12 @@ void loop() {
 
 
 void doubleclick() {
-    static int m = LOW;
-    // reverse the LED 
-    m = !m;
-    digitalWrite(13, m);
+    if (fxSpecial == fxRotate) {
+        fxSpecial = fxRainbow;
+    } else {
+        fxSpecial = fxRotate;
+    }
+    fx = fxSpecial;
 }
 
 void pressStart() {
